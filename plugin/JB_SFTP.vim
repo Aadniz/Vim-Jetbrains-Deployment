@@ -349,6 +349,7 @@ function! JB_SFTP_GenerateConfig()
 		endif
 	else
 		call writefile(thaStatus, config_path, "a")
+		echo "Config generated"
 	endif
 endfunction
 
@@ -509,6 +510,7 @@ function! JB_SFTP_UploadFile()
 	:w
 	call system("scp -i ". SSH_key_path ." -P ".port." ".work_dir_path.@%." ".username."@".host.":".mapping .@%)
 	call JB_SFTP_UpdateHashLog()
+	echo "Saved and Uploaded " . @%
 endfunction
 
 function! JB_SFTP_DownloadFile()
@@ -525,6 +527,7 @@ function! JB_SFTP_DownloadFile()
 	call system("scp -i ". SSH_key_path ." -P ".port." ".username."@".host.":".mapping .@%. " ".work_dir_path.@%)
 	call JB_SFTP_UpdateHashLog()
 	:e!
+	echo "Downloaded " . @%
 endfunction
 
 function! JB_SFTP_ValidateSSH()
@@ -576,8 +579,12 @@ function! JB_SFTP_SyncAll_sha256sum()
 	let work_dir_path = JB_SFTP_GetWorkDirPath()
 	let randomstring = JB_SFTP_RandomizedString(20)
 	let randomstring2 = JB_SFTP_RandomizedString(18)
+	echo "Generating hashsum..."
 	call system("cd ".work_dir_path."; find -type f -print0 | xargs -0 sha256sum >> /tmp/JB_SFTP_".randomstring2.".log")
+	redraw
+	echo "Generating hashsum from the server..."
 	call system("ssh -i ".SSH_key_path." -p ".port." ".username."@".host." \"cd ".mapping."/;find -type f -print0 | xargs -0 sha256sum\" >> /tmp/JB_SFTP_".randomstring.".log")
+	redraw
 
 	if !filereadable("/tmp/JB_SFTP_".randomstring.".log")
 		echo "Unable to save to file /tmp/JB_SFTP_".randomstring.".log, quitting"
@@ -594,6 +601,7 @@ function! JB_SFTP_SyncAll_sha256sum()
 		endif
 		let local_filefocus = split(line, ' ./')[1]
 		let local_hashsum =  split(line, ' ')[0]
+		echo "Syncing ".local_filefocus
 		let wasFound = 0
 		for line2 in remote_hashsum_log
 			if line2 == ""
@@ -610,6 +618,7 @@ function! JB_SFTP_SyncAll_sha256sum()
 		if wasFound == 0
 			call add(finished_log, local_hashsum . ', , ./'.local_filefocus)
 		endif
+		redraw
 		let c+=1
 	endfor
 	call writefile(finished_log, hashsum_log_path, "a")
