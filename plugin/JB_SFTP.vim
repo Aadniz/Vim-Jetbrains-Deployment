@@ -24,6 +24,10 @@ function! JB_SFTP_GetSSHKeyPath()
 	return SSH_key_path
 endfunction
 
+function! JB_SFTP_RedrawEcho(word)
+	redraw
+	echo a:word
+endfunction
 
 function! JB_SFTP_RandomizedString(thalength)
 	" List containing the characters to use in the random string:
@@ -263,8 +267,10 @@ function! JB_SFTP_Fetch_Settings()
 		endif
 	endfor
 
-
 	let mapping = substitute(rootmapping . workmapping, "//", "/", "")
+	if mapping[len(mapping)-1] != "/"
+		let mapping .= "/"
+	endif
 
 	if thaHost == ""
 		let thaHost = temphost
@@ -343,6 +349,8 @@ function! JB_SFTP_GenerateConfig()
 		if tolower(chosenANSWER) == "y"
 			call delete(config_path)
 			call writefile(thaStatus, config_path, "a")
+			redraw
+			echo "Config regenerated"
 		else
 			echo "Well then, not doing anything then"
 			return
@@ -510,6 +518,7 @@ function! JB_SFTP_UploadFile()
 	:w
 	call system("scp -i ". SSH_key_path ." -P ".port." ".work_dir_path.@%." ".username."@".host.":".mapping .@%)
 	call JB_SFTP_UpdateHashLog()
+	redraw
 	echo "Saved and Uploaded " . @%
 endfunction
 
@@ -621,9 +630,12 @@ function! JB_SFTP_SyncAll_sha256sum()
 		redraw
 		let c+=1
 	endfor
+	call JB_SFTP_RedrawEcho("Writing hashlog to file")
 	call writefile(finished_log, hashsum_log_path, "a")
+	call JB_SFTP_RedrawEcho("Deleting files in /tmp")
 	call delete("/tmp/JB_SFTP_".randomstring2.".log")
 	call delete("/tmp/JB_SFTP_".randomstring.".log")
+	call JB_SFTP_RedrawEcho("Syncing Done!")
 endfunction
 
 function! JB_SFTP_sha256sum_append(filename)
