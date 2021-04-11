@@ -21,6 +21,8 @@ For example:
 
     source $HOME/.config/nvim/scripts/JB_SFTP.vim
 
+---
+
 **Setting syncing**
 1. First you need to cd to the directory where the project is located. (.idea folder needs to be in this directory)
 Open vim.
