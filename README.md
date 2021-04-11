@@ -42,7 +42,6 @@ Open vim.
 Download the file from the server with call `:call JB_SFTP_DownloadFile()`, or upload with `:call JB_SFTP_UploadFile()`
 
 ## Known issues
-- Sync all sha256sum will lag the editor, depending on the size of the project, this can lag for up to an hour (20 minutes for project with 9000 files)
 - Not tested on MacOS or Windows
 - Only supports SSH setup
 
