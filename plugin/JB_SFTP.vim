@@ -361,6 +361,95 @@ function! JB_SFTP_GenerateConfig()
 	endif
 endfunction
 
+function! JB_SFTP_Setup()
+	let idea_dir = JB_SFTP_GetIdeaDirPath()
+	echo "Do you want to setup manually?"
+	echo "  \"" . idea_dir . "\""
+	let chosenANSWER = input('[ y/n/c ] > ')
+	redraw
+	if tolower(chosenANSWER) == "n"
+		call JB_SFTP_GenerateConfig()
+		return
+	endif
+	if tolower(chosenANSWER) != "y"
+		redraw
+		echo "Cancelled"
+		return
+	endif
+	let work_dir_path = JB_SFTP_GetWorkDirPath()
+	if isdirectory(idea_dir)
+		echo "File ".idea_dir." exists"
+		redraw
+	else
+		echo "Are you sure you want to create the config for this directory?"
+		echo "  \"" . work_dir_path . "\""
+		let chosenANSWER = input('[ y/n ] > ')
+		if tolower(chosenANSWER) != "y"
+			redraw
+			echo "Cancelled"
+			return
+		endif
+		redraw
+		call mkdir(idea_dir, "p", 0755)
+	endif
+	
+	echo "Setting up SFTP config"
+	echo "What is the ip / hostname ?"
+	let chosenHOST = input('[ hostname / ip ] > ')
+	redraw
+	if chosenHOST == ""
+		echo "Cancelled"
+		return
+	endif
+
+	echo "What is the username (default: root) ?"
+	let chosenUSER = input('[ username ] > ')
+	redraw
+	if chosenUSER == ""
+		chosenUSER = "root"
+	endif
+
+	echo "What is the port (default: 22) ?"
+	let chosenPORT = input('[ port ] > ')
+	redraw
+	if chosenPORT == ""
+		chosenPORT = "22"
+	endif
+
+	echo "What is the external mapping you want to sync with ".work_dir_path." (default: /var/www/html/) ?"
+	let chosenMAPPING = input('[ external mapping ] > ')
+	redraw
+	if chosenMAPPING == ""
+		chosenMAPPING = "/var/www/html/"
+	endif
+
+	echo "Do you confirm to settle with this SFTP connection mapping?"
+	echo "  ".chosenUSER."@".chosenHOST.":".chosenPORT.chosenMAPPING. " <=> " .work_dir_path
+	let chosenANSWER = input('[ y/n ] > ')
+	redraw
+	if chosenANSWER != "y"
+		echo "Cancelled"
+		return
+	endif
+	let config_path = JB_SFTP_GetConfigPath()
+	if filereadable(config_path)
+		call delete(config_path)
+	endif
+
+	call writefile([chosenUSER,chosenHOST,chosenPORT,chosenMAPPING,""], config_path, "a")
+
+	call JB_SFTP_GenerateSSHKeyFile()
+
+	echo "Do you want to sync all hashsums now?"
+	let chosenANSWER = input('[ y/n ] > ')
+	if chosenANSWER != "y"
+		echo "Skipped syncing hashsums"
+		return
+	endif
+	redraw
+	call JB_SFTP_SyncAll_sha256sum()
+endfunction
+
 function! JB_SFTP_ValidateConfig(onlyReturn)
 	let config_settings = JB_SFTP_Show_ConfigSettings()
 	if config_settings[0] == ""
