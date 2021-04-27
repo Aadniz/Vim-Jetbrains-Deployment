@@ -31,12 +31,10 @@ For example:
 ---
 
 **Setting syncing**
-1. First you need to cd to the directory where the project is located. (.idea folder needs to be in this directory)
-Open vim.
-2. Validate if all the files in .idea folder is found, do `:call JB_SFTP_Enabled_Status()`
-3. Then you need to generate the config by doing `:call JB_SFTP_GenerateConfig()`
-5. You need to setup generate a ssh key identity file, this will be asked automatically anyways, but you can do it manually with `:call JB_SFTP_GenerateSSHKeyFile()`
-5. Then, you can sync all hashsums for both directories locally and remote, do `:call JB_SFTP_SyncAll_sha256sum()` (Depending on the project size, this might take up to around 30 minutes)
+1. First you need to cd to the directory where the project is located.
+2. Then you can setup the config by doing `:call JB_SFTP_Setup()` or, if the .idea folder exists within the folder, you can generate the config by doing `:call JB_SFTP_GenerateConfig()`
+3. You need to setup generate a ssh key identity file, this will be asked automatically anyways, but you can do it manually with `:call JB_SFTP_GenerateSSHKeyFile()`
+4. Then, you can sync all hashsums for both directories locally and remote, do `:call JB_SFTP_SyncAll_sha256sum()` (Depending on the project size, this might take up to around 30 minutes)
 
 ## Mapping example
 
